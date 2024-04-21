@@ -1,0 +1,6 @@
+spring:
+  application:
+    name: ShortUrl
+
+server:
+  port: 8089
