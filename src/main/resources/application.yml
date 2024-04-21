@@ -1,6 +1,19 @@
+
+server:
+  port: 8090
+
+logging:
+  level:
+    org.springframework: info
+
 spring:
   application:
     name: ShortUrl
-
-server:
-  port: 8089
+  datasource:
+    url: ${DB_DATABASE}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create-drop

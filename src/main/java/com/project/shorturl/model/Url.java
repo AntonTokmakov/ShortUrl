@@ -2,12 +2,14 @@ package com.project.shorturl.model;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
+import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.URL;
 
 import java.time.LocalDateTime;
 
 @Entity
+@Data
 @NoArgsConstructor
 @Table(name = "urls", indexes = @Index(name = "idx_short_url", columnList = "short_url"))
 public class Url {
@@ -25,8 +27,9 @@ public class Url {
     @Column(nullable = false)
     private LocalDateTime dateTime;
 
-    public Url(String longUrl, String shortUrl) {
+    public Url(String longUrl, String shortUrl, LocalDateTime dateTime) {
         this.longUrl = longUrl;
         this.shortUrl = shortUrl;
+        this.dateTime = dateTime;
     }
 }
