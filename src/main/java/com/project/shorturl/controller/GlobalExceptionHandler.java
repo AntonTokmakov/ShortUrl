@@ -2,6 +2,7 @@ package com.project.shorturl.controller;
 
 import com.project.shorturl.controller.dto.ExceptionResponse;
 import com.project.shorturl.exception.GeneratedUrlException;
+import com.project.shorturl.exception.RedirectException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ValidationException;
 import lombok.extern.slf4j.Slf4j;
@@ -13,6 +14,8 @@ import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import java.io.IOException;
 
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 
@@ -27,7 +30,16 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ExceptionResponse> processValidationError(HttpServletRequest request, Exception exception, BindingResult bindingResult) {
+    public ResponseEntity<ExceptionResponse> handleProcessValidationError(HttpServletRequest request, Exception exception, BindingResult bindingResult) {
+        log.warn(exception.getClass().getName() + ": " + exception.getMessage());
+        String message = String.valueOf(bindingResult.getAllErrors()
+                .stream()
+                .map(ObjectError::getDefaultMessage)
+                .toList());
+        return ResponseEntity.status(BAD_REQUEST).body(new ExceptionResponse(request.getRequestURI(), message, HttpStatus.BAD_REQUEST));
+    }
+    @ExceptionHandler(RedirectException.class)
+    public ResponseEntity<ExceptionResponse> handleRedirectException(HttpServletRequest request, Exception exception, BindingResult bindingResult) {
         log.warn(exception.getClass().getName() + ": " + exception.getMessage());
         String message = String.valueOf(bindingResult.getAllErrors()
                 .stream()

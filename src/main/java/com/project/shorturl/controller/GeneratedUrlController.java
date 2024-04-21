@@ -10,18 +10,17 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/generate")
+@RequestMapping("api/v1/generate")
 public class GeneratedUrlController {
 
     private final GeneratorService generatorService;
 
     @PostMapping()
-    public GeneratedUrlResponse generateShortUrl(@RequestBody @Valid GeneratedUrlRequest request) {
+    public GeneratedUrlResponse generateShortUrl(@RequestBody @Valid GeneratedUrlRequest longUrl) {
         try {
-            return new GeneratedUrlResponse(generatorService.generateShortUrl( request.longUrl()));
+            return new GeneratedUrlResponse(generatorService.generateShortUrl(longUrl.longUrl()));
         } catch (ExistsLinkException e) {
-            //todo redirect to find long url
-            return null;
+            return new GeneratedUrlResponse(generatorService.getShortUrl(longUrl.longUrl()));
         }
     }
 }

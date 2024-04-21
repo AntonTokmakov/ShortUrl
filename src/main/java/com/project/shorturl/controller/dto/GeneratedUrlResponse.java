@@ -9,6 +9,6 @@ public class GeneratedUrlResponse {
         private String url;
 
         public GeneratedUrlResponse(String shortUrl) {
-                this.url =  "http://localhost:8090/" + shortUrl;
+                this.url =  "http://localhost:8090/api/v1/" + shortUrl;
         }
 }
