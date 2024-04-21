@@ -1,15 +1,13 @@
 package com.project.shorturl.service.impl;
 
-import com.project.shorturl.exception.ExistsLinkException;
-import com.project.shorturl.exception.GeneratedUrlException;
-import com.project.shorturl.exception.LinkNotFoundException;
-import com.project.shorturl.exception.RedirectException;
+import com.project.shorturl.exception.*;
 import com.project.shorturl.model.Url;
 import com.project.shorturl.repository.UrlRepository;
 import com.project.shorturl.service.GeneratorService;
 import com.project.shorturl.service.RedirectService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -26,9 +24,12 @@ public class UrlService implements GeneratorService, RedirectService {
 
     public final UrlRepository urlRepository;
 
+    @Value("${life.url}")
+    private int lifeUrlMinutes;
+
     @Override
     public String getShortUrl(String longUrl) {
-        Url url = urlRepository.findByShortUrl(longUrl)
+        Url url = urlRepository.findByLongUrl(longUrl)
                 .orElseThrow(() -> new LinkNotFoundException("Short URL %s not found".formatted(longUrl)));
         return url.getShortUrl();
     }
@@ -62,11 +63,17 @@ public class UrlService implements GeneratorService, RedirectService {
     @Override
     public HttpStatus redirectTo(String shortUrl, HttpServletResponse response) {
 
-        String longUrl = getLongUrl(shortUrl);
+        Url url = urlRepository.findByShortUrl(shortUrl)
+                .orElseThrow(() -> new LinkNotFoundException("Short URL %s not found".formatted(shortUrl)));
+
+        if (!(url.getDateTime().plusMinutes(lifeUrlMinutes).isAfter(LocalDateTime.now()))) {
+            throw new LifeTimeExpiredException("Short URL %s expired".formatted(shortUrl));
+        }
+
         try {
-            response.sendRedirect(longUrl);
+            response.sendRedirect(url.getLongUrl());
         } catch (IOException e) {
-            throw new RedirectException("Failed to redirect to %s".formatted(longUrl));
+            throw new RedirectException("Failed to redirect to %s".formatted(url.getLongUrl()));
         }
         return HttpStatus.MOVED_PERMANENTLY;
     }

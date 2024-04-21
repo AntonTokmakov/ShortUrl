@@ -6,4 +6,6 @@ public interface GeneratorService {
 
     String generateShortUrl(String longUrl) throws ExistsLinkException;
 
+    String getShortUrl(String longUrl);
+
 }
