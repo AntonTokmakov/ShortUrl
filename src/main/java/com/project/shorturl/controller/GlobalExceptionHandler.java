@@ -22,41 +22,35 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(GeneratedUrlException.class)
     public ResponseEntity<ExceptionResponse> handleGeneratedUrlException(HttpServletRequest request, Exception exception) {
-        log.warn(exception.getClass().getName() + ": " + exception.getMessage());
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ExceptionResponse(request.getRequestURI(), exception.getMessage(), HttpStatus.BAD_REQUEST));
+        return getResponse(request, exception);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ExceptionResponse> handleProcessValidationError(HttpServletRequest request, Exception exception, BindingResult bindingResult) {
-        log.warn(exception.getClass().getName() + ": " + exception.getMessage());
-        String message = String.valueOf(bindingResult.getAllErrors()
-                .stream()
-                .map(ObjectError::getDefaultMessage)
-                .toList());
-        return ResponseEntity.status(BAD_REQUEST).body(new ExceptionResponse(request.getRequestURI(), message, HttpStatus.BAD_REQUEST));
-    }
-    @ExceptionHandler(RedirectException.class)
-    public ResponseEntity<ExceptionResponse> handleRedirectException(HttpServletRequest request, Exception exception, BindingResult bindingResult) {
-        log.warn(exception.getClass().getName() + ": " + exception.getMessage());
-        String message = String.valueOf(bindingResult.getAllErrors()
-                .stream()
-                .map(ObjectError::getDefaultMessage)
-                .toList());
-        return ResponseEntity.status(BAD_REQUEST).body(new ExceptionResponse(request.getRequestURI(), message, HttpStatus.BAD_REQUEST));
+        return getResponseEntityValid(request, exception, bindingResult);
     }
 
-//    @ExceptionHandler(LifeTimeExpiredException.class)
-//    public ResponseEntity<ExceptionResponse> handleLifeTimeExpiredException(HttpServletRequest request, Exception exception, BindingResult bindingResult) {
-//        log.warn(exception.getClass().getName() + ": " + exception.getMessage());
-//        String message = String.valueOf(bindingResult.getAllErrors()
-//                .stream()
-//                .map(ObjectError::getDefaultMessage)
-//                .toList());
-//        return ResponseEntity.status(BAD_REQUEST).body(new ExceptionResponse(request.getRequestURI(), message, HttpStatus.BAD_REQUEST));
-//    }
+    @ExceptionHandler(RedirectException.class)
+    public ResponseEntity<ExceptionResponse> handleRedirectException(HttpServletRequest request, Exception exception) {
+        return getResponse(request, exception);
+    }
 
     @ExceptionHandler(LifeTimeExpiredException.class)
     public ResponseEntity<ExceptionResponse> handleLifeTimeExpiredException(HttpServletRequest request, Exception exception) {
+        return getResponse(request, exception);
+    }
+
+
+    private ResponseEntity<ExceptionResponse> getResponseEntityValid(HttpServletRequest request, Exception exception, BindingResult bindingResult) {
+        log.warn(exception.getClass().getName() + ": " + exception.getMessage());
+        String message = String.valueOf(bindingResult.getAllErrors()
+                .stream()
+                .map(ObjectError::getDefaultMessage)
+                .toList());
+        return ResponseEntity.status(BAD_REQUEST).body(new ExceptionResponse(request.getRequestURI(), message, HttpStatus.BAD_REQUEST));
+    }
+
+    private ResponseEntity<ExceptionResponse> getResponse(HttpServletRequest request, Exception exception) {
         log.warn(exception.getClass().getName() + ": " + exception.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ExceptionResponse(request.getRequestURI(), exception.getMessage(), HttpStatus.BAD_REQUEST));
     }
