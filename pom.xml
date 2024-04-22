@@ -89,7 +89,7 @@
 						<manifest>
 							<addClasspath>true</addClasspath>
 							<classpathPrefix>lib/</classpathPrefix>
-							<mainClass>Main</mainClass>
+							<mainClass>com.project.shorturl.ShortUrlApplication</mainClass>
 						</manifest>
 					</archive>
 				</configuration>

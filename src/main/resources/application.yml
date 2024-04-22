@@ -6,16 +6,16 @@ server:
 
 logging:
   level:
-    org.springframework: INFO
+    org.springframework: ERROR
 
 spring:
   application:
     name: ShortUrl
   datasource:
-    url: ${DB_DATABASE}
-    username: ${DB_USER}
-    password: ${DB_PASSWORD}
+    url: jdbc:postgresql://postgres:5432/short_url
+    username: admin
+    password: password_admin
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: update
