@@ -6,7 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.URL;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 
 @Entity
 @Data
@@ -25,9 +25,9 @@ public class Url {
     @Column(nullable = false, unique = true)
     private String shortUrl;
     @Column(nullable = false)
-    private LocalDateTime dateTime;
+    private ZonedDateTime dateTime;
 
-    public Url(String longUrl, String shortUrl, LocalDateTime dateTime) {
+    public Url(String longUrl, String shortUrl, ZonedDateTime dateTime) {
         this.longUrl = longUrl;
         this.shortUrl = shortUrl;
         this.dateTime = dateTime;

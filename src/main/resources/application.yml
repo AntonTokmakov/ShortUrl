@@ -1,5 +1,5 @@
 life:
-  url: 0
+  url: 10
 
 server:
   port: 8090
