@@ -1,12 +1,12 @@
 life:
-  url: 10
+  url: 0
 
 server:
   port: 8090
 
 logging:
   level:
-    org.springframework: info
+    org.springframework: INFO
 
 spring:
   application:

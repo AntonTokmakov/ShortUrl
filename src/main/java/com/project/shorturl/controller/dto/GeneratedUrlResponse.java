@@ -6,9 +6,10 @@ import lombok.*;
 @Setter
 public class GeneratedUrlResponse {
 
-        private String url;
+        private String shortUrl;
 
         public GeneratedUrlResponse(String shortUrl) {
-                this.url = "http://localhost:8090/api/v1/" + shortUrl;
+
+                this.shortUrl = "http://localhost:8090/api/v1/" + shortUrl;
         }
 }
