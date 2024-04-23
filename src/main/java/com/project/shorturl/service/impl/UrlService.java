@@ -18,12 +18,15 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.ZonedDateTime;
 import java.util.Base64;
+import java.util.concurrent.*;
 
 @Service
 @RequiredArgsConstructor
 public class UrlService implements GeneratorService, RedirectService, FindLink {
 
     public final UrlRepository urlRepository;
+
+    private final ExecutorService executorService = Executors.newFixedThreadPool(100);
 
     @Value("${life.url}")
     private int lifeUrlMinutes;
@@ -38,19 +41,27 @@ public class UrlService implements GeneratorService, RedirectService, FindLink {
     @Override
     public String generateShortUrl(String longUrl) {
 
-        if (urlRepository.existsByLongUrl(longUrl)) {
-            throw new ExistsLinkException("Long URL %s already exists.\n Use GET /{shortUrl}".formatted(longUrl));
-        }
+        Future<String> link = executorService.submit(() -> {
+            if (urlRepository.existsByLongUrl(longUrl)) {
+                throw new ExistsLinkException("Long URL %s already exists.\n Use GET /{shortUrl}".formatted(longUrl));
+            }
+
+            try {
+                MessageDigest messageDigest = MessageDigest.getInstance("SHA-256");
+                byte[] hash = messageDigest.digest(longUrl.getBytes(StandardCharsets.UTF_8));
+                String shortUrl = Base64.getUrlEncoder().withoutPadding().encodeToString(hash).substring(0, 8);
+                urlRepository.save(new Url(longUrl, shortUrl, ZonedDateTime.now()));
+                return shortUrl;
+            } catch (NoSuchAlgorithmException ex) {
+                throw new GeneratedUrlException("Failed to generate short URL %s"
+                        .formatted(longUrl) + ": " + ex.getMessage());
+            }
+        });
 
         try {
-            MessageDigest messageDigest = MessageDigest.getInstance("SHA-256");
-            byte[] hash = messageDigest.digest(longUrl.getBytes(StandardCharsets.UTF_8));
-            String shortUrl = Base64.getUrlEncoder().withoutPadding().encodeToString(hash).substring(0, 8);
-            urlRepository.save(new Url(longUrl, shortUrl, ZonedDateTime.now()));
-            return shortUrl;
-        } catch (NoSuchAlgorithmException ex) {
-            throw new GeneratedUrlException("Failed to generate short URL %s"
-                    .formatted(longUrl) + ": " + ex.getMessage());
+            return link.get();
+        } catch (InterruptedException | ExecutionException e) {
+            throw new ServiceUnavailableException("Service is currently overloaded. Please try again later.");
         }
     }
 
@@ -62,20 +73,20 @@ public class UrlService implements GeneratorService, RedirectService, FindLink {
     }
 
     @Override
-    public HttpStatus redirectTo(String shortUrl, HttpServletResponse response) {
+    public HttpStatus redirectTo(String shortUrl, HttpServletResponse response){
 
-        Url url = urlRepository.findByShortUrl(shortUrl)
-                .orElseThrow(() -> new LinkNotFoundException("Short URL %s not found".formatted(shortUrl)));
+            Url url = urlRepository.findByShortUrl(shortUrl)
+                    .orElseThrow(() -> new LinkNotFoundException("Short URL %s not found".formatted(shortUrl)));
 
-        if (!(url.getDateTime().plusMinutes(lifeUrlMinutes).isAfter(ZonedDateTime.now()))) {
-            throw new LifeTimeExpiredException("Short URL %s expired".formatted(shortUrl));
-        }
+            if (!(url.getDateTime().plusMinutes(lifeUrlMinutes).isAfter(ZonedDateTime.now()))) {
+                throw new LifeTimeExpiredException("Short URL %s expired".formatted(shortUrl));
+            }
 
-        try {
-            response.sendRedirect(url.getLongUrl());
-        } catch (IOException e) {
-            throw new RedirectException("Failed to redirect to %s".formatted(url.getLongUrl()));
-        }
-        return HttpStatus.MOVED_PERMANENTLY;
+            try {
+                response.sendRedirect(url.getLongUrl());
+            } catch (IOException e) {
+                throw new RedirectException("Failed to redirect to %s".formatted(url.getLongUrl()));
+            }
+            return HttpStatus.MOVED_PERMANENTLY;
     }
 }

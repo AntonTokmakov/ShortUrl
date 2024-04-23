@@ -4,10 +4,6 @@ life:
 server:
   port: 8090
 
-logging:
-  level:
-    org.springframework: ERROR
-
 spring:
   application:
     name: ShortUrl

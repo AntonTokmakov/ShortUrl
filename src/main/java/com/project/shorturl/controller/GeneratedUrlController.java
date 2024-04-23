@@ -63,10 +63,9 @@ public class GeneratedUrlController {
                                     }""",
                             description = "Переданная строка не является ссылкой")
                     }))
-
     @PostMapping
     public ResponseEntity<GeneratedUrlResponse> generateShortUrl(@RequestBody @Valid GeneratedUrlRequest longUrl) {
-            return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(new GeneratedUrlResponse(generatorService.generateShortUrl(longUrl.longUrl())));
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(new GeneratedUrlResponse(generatorService.generateShortUrl(longUrl.longUrl())));
     }
 }

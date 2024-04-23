@@ -62,10 +62,16 @@ public class GlobalExceptionHandler {
         return getResponse(request, exception, HttpStatus.NOT_FOUND);
     }
 
+    @ExceptionHandler(ServiceUnavailableException.class)
+    public ResponseEntity<ExceptionResponse> handleServiceUnavailableException(HttpServletRequest request,
+                                                                            Exception exception) {
+        return getResponse(request, exception, HttpStatus.NOT_FOUND);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ExceptionResponse> handleOtherException(HttpServletRequest request,
                                                                      Exception exception) {
-        return getResponse(request, exception, HttpStatus.INTERNAL_SERVER_ERROR);
+        return getResponse(request, exception, HttpStatus.SERVICE_UNAVAILABLE);
     }
 
 
